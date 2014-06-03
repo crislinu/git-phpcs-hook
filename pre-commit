@@ -45,7 +45,7 @@ REPO_ROOT="$(dirname "$PARENT_DIR")"
 
 # this is the reason we need to obtain the path
 # to the "repo" directory: because "git diff" has to be executed on it, it won't work otherwise.
-for RELATIVE_PATH in `cd "$REPO_ROOT";git diff --name-only HEAD`; do
+for RELATIVE_PATH in `cd "$REPO_ROOT";git diff --diff-filter=ACMR --name-only HEAD`; do
 
 	# calculate the full path of each modified file
     FULL_FILE_PATH="$REPO_ROOT/$RELATIVE_PATH"
@@ -53,5 +53,5 @@ for RELATIVE_PATH in `cd "$REPO_ROOT";git diff --name-only HEAD`; do
 	# check with PHP CodeSniffer if the file is OK
 	# edit the path to the rule-set if it differs on your machine
 	# execution will stop when a file is found that breaks the specified rule-set
-    exec phpcs -np --standard=/D/xampp/php/pear/PHP/CodeSniffer/Standards/PSR2/ruleset.xml "$FULL_FILE_PATH"
+    phpcs -n --standard=/D/xampp/php/pear/PHP/CodeSniffer/Standards/PSR2/ruleset.xml "$FULL_FILE_PATH"
 done

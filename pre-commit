@@ -1,0 +1,57 @@
+#!/bin/sh
+
+# Copyright (c) 2014 Radu Murzea.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+# -----------------------------------------------------------------------------
+#
+# This script will scan the entire list of changed files and check each one if it
+# conforms with the specified rule-set. This is checked with the help of PHP CodeSniffer
+#
+# Make sure you have "phpcs" in your PATH/CLASSPATH variable so that the system will know where to get it from
+#
+# Author: Radu Murzea
+# Date: 02 June 2014
+# Version: 1.0
+
+# let's say our repository working directory is called repo
+# but we're currently in repo/.git/hooks, so we need to calculate the current directory's grandparent
+
+# right now, we're in /repo/.git/hooks, so let's get that path
+CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# let's calculate the parent directory, which is: /repo/.git
+PARENT_DIR="$(dirname "$CURRENT_DIR")"
+
+# calculate grandparent directory (which is what we want): /repo/
+REPO_ROOT="$(dirname "$PARENT_DIR")"
+
+# this is the reason we need to obtain the path
+# to the "repo" directory: because "git diff" has to be executed on it, it won't work otherwise.
+for RELATIVE_PATH in `cd "$REPO_ROOT";git diff --name-only HEAD`; do
+
+	# calculate the full path of each modified file
+    FULL_FILE_PATH="$REPO_ROOT/$RELATIVE_PATH"
+	
+	# check with PHP CodeSniffer if the file is OK
+	# edit the path to the rule-set if it differs on your machine
+	# execution will stop when a file is found that breaks the specified rule-set
+    exec phpcs -np --standard=/D/xampp/php/pear/PHP/CodeSniffer/Standards/PSR2/ruleset.xml "$FULL_FILE_PATH"
+done
